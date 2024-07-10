@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React,{ useState }from 'react';
 import './app2.css';
 
 function Form() {
@@ -13,23 +13,31 @@ function Form() {
     position: '',
     id: ''
   });
-  const [isEditing, setIsEditing] =useState(false);
+  const [isEditing,setIsEditing] =useState(false);
   const [currentEmployeeId,setCurrentEmployeeId] =useState('');
+  const [errors,setErrors] =useState({});
+
+  const validate =() =>{
+    let tempErrors= {};
+    tempErrors.name= newEmployee.name? "" : "This field is required.";
+    tempErrors.email= newEmployee.email? (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(newEmployee.email) ? "" : "Email is not valid.") :"This field is required.";
+    tempErrors.phone= newEmployee.phone? (/^\d{10}$/.test(newEmployee.phone)? "" : "How are we supposed to contact you?") :"This field is required.";
+    tempErrors.id= newEmployee.id? "" : "Government needs this.";
+    setErrors(tempErrors);
+    return Object.values(tempErrors).every(x =>x ==="");
+  };
 
   const addEmployee = () => {
-    if (employees.some(employee =>employee.id ===newEmployee.id)) {
+    if(!validate()) return;
+    if(employees.some(employee =>employee.id ===newEmployee.id)) {
       alert('Congrats you might be a clone.');
       return;
     }
-    if (!newEmployee.name ||!newEmployee.email||!newEmployee.id) {
-      alert('Fill in all required fields.');
-      return;
-    }
-    setEmployees([...employees, newEmployee]);
+    setEmployees([...employees,newEmployee]);
     resetForm();
   };
 
-  const resetForm = () =>{
+  const resetForm =() =>{
     setNewEmployee({
       name: '',
       gender: '',
@@ -41,28 +49,27 @@ function Form() {
     });
     setIsEditing(false);
     setCurrentEmployeeId('');
+    setErrors({});
   };
 
-  const deleteEmployee = (id) =>{
+  const deleteEmployee =(id) =>{
     setEmployees(employees.filter(employee =>employee.id !==id));
   };
 
-  const editEmployee = (employee) =>{
-    setNewEmployee(employee);
+  const editEmployee =(employee)=> {setNewEmployee(employee);
     setIsEditing(true);
     setCurrentEmployeeId(employee.id);
   };
 
-  const updateEmployee = () =>{
-    setEmployees(employees.map(employee => (employee.id === currentEmployeeId ? newEmployee : employee)));
+  const updateEmployee =() =>{
+    if(!validate()) return;
+    setEmployees(employees.map(employee =>(employee.id ===currentEmployeeId ? newEmployee : employee)));
     resetForm();
   };
 
-  const handleSubmit = () =>{
-    if (isEditing) {
-      updateEmployee();
-    } else {
-      addEmployee();
+  const handleSubmit =() =>{
+    if(isEditing) {updateEmployee();}
+    else {addEmployee();
     }
   };
 
@@ -86,44 +93,55 @@ function Form() {
           type="text"
           placeholder="Name?"
           value={newEmployee.name}
-          onChange={(e) =>setNewEmployee({...newEmployee,name: e.target.value })}
+          onChange={(e) =>setNewEmployee({...newEmployee,name:e.target.value })}
         />
+        <div className="error">{errors.name}</div>
+
         <input
           type="email"
           placeholder="Email?"
           value={newEmployee.email}
-          onChange={(e) =>setNewEmployee({...newEmployee,email: e.target.value })}
+          onChange={(e) => setNewEmployee({...newEmployee,email: e.target.value })}
         />
+        <div className="error">{errors.email}</div>
+
         <input
           type="text"
           placeholder="Phone?"
           value={newEmployee.phone}
           onChange={(e) =>setNewEmployee({...newEmployee,phone: e.target.value })}
         />
+        <div className="error">{errors.phone}</div>
+
         <input
           type="text"
           placeholder="Image URL?"
           value={newEmployee.image}
-          onChange={(e) =>setNewEmployee({...newEmployee,image: e.target.value })}
+          onChange={(e) =>setNewEmployee({...newEmployee,image:e.target.value })}
         />
+        
         <input
           type="text"
           placeholder="Gender?"
           value={newEmployee.gender}
-          onChange={(e) =>setNewEmployee({...newEmployee,gender: e.target.value })}
+          onChange={(e) =>setNewEmployee({...newEmployee,gender:e.target.value })}
         />
+        
         <input
           type="text"
           placeholder="Position?"
           value={newEmployee.position}
           onChange={(e) =>setNewEmployee({...newEmployee,position: e.target.value })}
         />
+        
         <input
           type="text"
           placeholder="ID?"
           value={newEmployee.id}
-          onChange={(e) =>setNewEmployee({...newEmployee,id: e.target.value })}
+          onChange={(e) =>setNewEmployee({...newEmployee, id:e.target.value })}
         />
+        <div className="error">{errors.id}</div>
+
         <button onClick={handleSubmit}>{isEditing? 'Update Employee':'Add Employee'}</button>
         {isEditing && <button onClick={resetForm}>Cancel</button>}
       </div>
