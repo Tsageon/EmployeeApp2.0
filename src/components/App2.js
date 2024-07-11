@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import './app2.css';
 ///Can I just say HAAAAAAAAAIBO!!!
 
-
 function Form() {
   const [employees,setEmployees]=useState([]);
   const [searchQuery,setSearchQuery]=useState('');
@@ -75,74 +74,50 @@ function Form() {
       
       <div>
         <h2>Employee Query</h2>
-        <input
-          type="text"
-          placeholder="Who are you lookin for?"
-          value={searchQuery}
-          onChange={(e)=> setSearchQuery(e.target.value)}/>
+        <input type="text" placeholder="Who are you lookin for?" value={searchQuery}
+          onChange={(e)=>setSearchQuery(e.target.value)}/>
         
         <button onClick={handleSearch}>Search</button>
       </div>
       
       <div>
-        <h2>{isEditing? 'Edit Employee':'Add Employee'}</h2>
-        <input
-          type="text"
-          placeholder="Name?"
-          value={newEmployee.name}
-          onChange={(e)=>setNewEmployee({...newEmployee,name:e.target.value})}
-        />
+        <h2>{isEditing?'Edit Employee':'Add Employee'}</h2>
+        <input type="text" placeholder="Name?" value={newEmployee.name}
+          onChange={(e)=>setNewEmployee({...newEmployee,name:e.target.value})}/>
+
         <div className="error">{errors.name}</div>
 
-        <input
-          type="email"
-          placeholder="Email?"
-          value={newEmployee.email}
-          onChange={(e)=> setNewEmployee({...newEmployee,email:e.target.value})}
-        />
+        <input type="email" placeholder="Email?" value={newEmployee.email}
+          onChange={(e)=>setNewEmployee({...newEmployee,email:e.target.value})}/>
+
         <div className="error">{errors.email}</div>
 
-        <input type="text"
-          placeholder="PhoneNo?"
-          value={newEmployee.phone}
-          onChange={(e)=>setNewEmployee({...newEmployee,phone:e.target.value})}
-        />
+        <input type="text" placeholder="PhoneNo?" value={newEmployee.phone}
+          onChange={(e)=>setNewEmployee({...newEmployee,phone:e.target.value})}/>
         <div className="error">{errors.phone}</div>
 
-        <input
-          type="text"
-          placeholder="Profile Pic?"
-          value={newEmployee.image}
+        <input type="text" placeholder="Profile Pic?"value={newEmployee.image}
           onChange={(e)=>setNewEmployee({...newEmployee,image:e.target.value})}/>
         
-        <input
-          type="text"
-          placeholder="Gender/Pronoun?"
-          value={newEmployee.gender}
+        <input type="text" placeholder="Gender/Pronoun?" value={newEmployee.gender}
           onChange={(e)=>setNewEmployee({...newEmployee,gender:e.target.value})}/>
         
-        <input
-          type="text"
-          placeholder="Position/Title?"
-          value={newEmployee.position}
+        <input type="text" placeholder="Position/Title?" value={newEmployee.position}
           onChange={(e)=>setNewEmployee({...newEmployee,position:e.target.value})}/>
         
-        <input
-          type="text"
-          placeholder="ID?"
-          value={newEmployee.id}
-          onChange={(e)=>setNewEmployee({...newEmployee,id:e.target.value})}/>
+        <input type="text" placeholder="ID?" value={newEmployee.id}
+         onChange={(e)=>setNewEmployee({...newEmployee,id:e.target.value})}/>
         
         <div className="error">{errors.id}</div>
 
-        <button onClick={handleSubmit}>{isEditing? 'Update Employee':'Add Employee'}</button>
-        {isEditing && <button onClick={resetForm}>Cancel</button>}
+        <button onClick={handleSubmit}>{isEditing?'Update Employee':'Add Employee'}</button>
+        {isEditing&&<button onClick={resetForm}>Cancel</button>}
       </div>
       
       <div>
         <h2>Employee List</h2>
-        {(searchQuery? filteredEmployees:employees)
-          .map(employee =>(
+        {(searchQuery?filteredEmployees:employees)
+          .map(employee=>(
             <div key={employee.id}>
               <p>Name: {employee.name}</p>
               <p>Email: {employee.email}</p>
