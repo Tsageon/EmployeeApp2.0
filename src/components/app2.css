@@ -5,34 +5,72 @@
   align-items: center;
 }
 
-h1{
+ h1{
   margin: 0px;
-}
+ }
 
-body{
+  body{
   background-color: grey;
-}
+ }
 
-input{
+ input{
   display: block;
   border-radius: 10px;
   margin: 10px;
   padding: 5px;
-}
+ }
 
-button{
+ button{
   margin-top: 10px;
   margin-left: 10px;
   padding: 5px 10px;
   border-radius: 10px;
-  border-color:aquamarine;
-}
+  border-color: aquamarine;
+ }
 
-h2{
+ h2{
   margin-top: 20px;
   padding-left: 20px;
-}
+ }
 
-div{
+ div{
   margin-bottom: 20px;
-}
+ }
+
+/*Another editon*/
+ table {
+  width: 80%;
+  margin: 20px auto;
+  margin-left: 20px;
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+ }
+
+ th,td{
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+ }
+
+ th{
+  background-color:whitesmoke;
+  color: black;
+  font-weight: bold;
+ }
+
+ tr:nth-child(even){
+  background-color: #f2f2f2;
+ }
+
+ tr:hover{
+  background-color: #ddd;
+ }
+
+ table caption{
+  margin: 10px;
+  font-weight: bold;
+  font-size: 1.2em;
+ }
