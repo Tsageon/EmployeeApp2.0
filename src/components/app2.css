@@ -1,37 +1,38 @@
 .App{
-    padding: 20px;
-  }
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-  h1{
-    padding-left: 600px;
-    justify-self: center;
-  }
+h1{
+  margin: 0;
+}
 
-  body{
-    background-color:whitesmoke;
-  }
+body{
+  background-color: grey;
+}
 
-  input{
-    display: block;
-    border-radius: 10px;
-    margin: 10px;
-    padding: 5px;
-  }
-  
-  button{
-    margin-top: 10px;
-    margin-left: 10px;
-    padding: 5px 10px;
-    border-radius: 10px;
-    border-color: grey;
-  }
-  
-  h2{
-    margin-top: 20px;
-    padding-left: 20px;
-  }
-  
-  div{
-    margin-bottom: 20px;
-  }
-  
+input{
+  display: block;
+  border-radius: 10px;
+  margin: 10px;
+  padding: 5px;
+}
+
+button{
+  margin-top: 10px;
+  margin-left: 10px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  border-color:aquamarine;
+}
+
+h2{
+  margin-top: 20px;
+  padding-left: 20px;
+}
+
+div{
+  margin-bottom: 20px;
+}
