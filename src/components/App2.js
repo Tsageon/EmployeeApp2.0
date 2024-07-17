@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './app2.css';
+import Home from './Home'
 
 function Form() {
   const [employees,setEmployees] = useState([]);
@@ -14,18 +15,18 @@ function Form() {
   const [currentEmployeeId,setCurrentEmployeeId] = useState('');
   const [errors,setErrors] = useState({});
 
-  const [showEmployeeQuery,setShowEmployeeQuery] = useState(false);
-  const [showFormAndList,setShowFormAndList] = useState(false);
+  const [showEmployeeQuery, setShowEmployeeQuery] = useState(true); 
+  const [showFormAndList, setShowFormAndList] = useState(false);
 
-  const validate = () => {
+  const validate = () => { 
     let tempErrors = {};
     tempErrors.name = newEmployee.name ? "" : "This field is required.";
     tempErrors.gender = newEmployee.gender ? "" : "What do you identify as?";
     tempErrors.email = newEmployee.email ? (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(newEmployee.email) ? "" : "Are you a bot?") : "This field is required.";
     tempErrors.phone = newEmployee.phone ? (/^\d{10}$/.test(newEmployee.phone) ? "" : "How are we supposed to contact you?") : "This field is required.";
-    tempErrors.image = newEmployee.image ? "" : "Profile picture is required.";
+    tempErrors.image = newEmployee.image ? "" : "What do you look like?";
     tempErrors.position = newEmployee.position ? "" : "Position is required.";
-    tempErrors.id = newEmployee.id ? "" : "Government needs this.";
+    tempErrors.id = newEmployee.id ? (/^\d{13}$/.test(newEmployee.id) ? "" : "Government needs this to be 13 digits.") : "Government needs this.";
     setErrors(tempErrors);
     return Object.values(tempErrors).every(x => x === "");
   };
@@ -54,7 +55,8 @@ function Form() {
 
     setIsEditing(false);
     setCurrentEmployeeId('');
-    setErrors({});};
+    setErrors({});
+  };
 
   const deleteEmployee = (id) => {
     setEmployees(employees.filter(employee => employee.id !== id));
@@ -64,17 +66,19 @@ function Form() {
     setNewEmployee(employee);
     setIsEditing(true);
     setCurrentEmployeeId(employee.id);
-    setShowFormAndList(true);};
+    setShowFormAndList(true);
+  };
 
   const updateEmployee = () => {
     if (!validate()) return;
 
     try {
       setEmployees(employees.map(employee => (employee.id === currentEmployeeId ? newEmployee : employee)));
-      resetForm();} 
-      catch (error) {
+      resetForm();
+    } catch (error) {
       alert('Government things Happened.Try Again.');
-    }};
+    }
+  };
 
   const handleSubmit = () => {
     if (isEditing) {
@@ -87,7 +91,8 @@ function Form() {
   const handleSearch = () => {
     if (employees.length === 0) {
       alert('No employees found.');
-      return;}
+      return;
+    }
 
     setFilteredEmployees(employees.filter(employee => employee.name.includes(searchQuery) || employee.id.includes(searchQuery)));
   };
@@ -98,12 +103,17 @@ function Form() {
     this.searchTimeout = setTimeout(handleSearch, 300);
   };
 
+  useEffect(() => {
+    handleSearch();
+    // eslint-disable-next-line
+  }, [employees]);
+
   return (
     <div className="app">
       <h1>Employee Registration Form</h1>
 
       <div>
-        <h2>
+        <h2 className="Two-headings" >
           {isEditing ? 'Edit Employee' : 'Add Employee'} & Employee List
           <button onClick={() => setShowFormAndList(!showFormAndList)}>
             {showFormAndList ? 'Hide' : 'Show'}
@@ -113,31 +123,36 @@ function Form() {
           <>
             <div>
               <input type="text" placeholder="Name/Initials?" value={newEmployee.name}
-                onChange={(e) => setNewEmployee({...newEmployee,name: e.target.value})}/>
+                onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} />
               <div className="error">{errors.name}</div>
 
               <input type="email" placeholder="Email?" value={newEmployee.email}
-                onChange={(e) => setNewEmployee({...newEmployee,email: e.target.value})}/>
+                onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })} />
               <div className="error">{errors.email}</div>
 
               <input type="text" placeholder="PhoneNo?" value={newEmployee.phone}
-                onChange={(e) => setNewEmployee({...newEmployee,phone: e.target.value})}/>
+                onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })} />
               <div className="error">{errors.phone}</div>
 
               <input type="text" placeholder="Profile Pic?" value={newEmployee.image}
-                onChange={(e) => setNewEmployee({...newEmployee,image: e.target.value})}/>
+                onChange={(e) => setNewEmployee({ ...newEmployee, image: e.target.value })} />
               <div className="error">{errors.image}</div>
 
-              <input type="text" placeholder="Gender/Pronoun?" value={newEmployee.gender}
-                onChange={(e) => setNewEmployee({...newEmployee,gender: e.target.value})}/>
+              <select className="styled-select"
+                value={newEmployee.gender}
+                onChange={(e) => setNewEmployee({...newEmployee,gender: e.target.value})}>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
               <div className="error">{errors.gender}</div>
 
               <input type="text" placeholder="Position/Title?" value={newEmployee.position}
-                onChange={(e) => setNewEmployee({...newEmployee,position: e.target.value})}/>
+                onChange={(e) => setNewEmployee({...newEmployee,position: e.target.value })} />
               <div className="error">{errors.position}</div>
 
               <input type="text" placeholder="ID?" value={newEmployee.id}
-                onChange={(e) => setNewEmployee({...newEmployee, id: e.target.value})}/>
+                onChange={(e) => setNewEmployee({...newEmployee,id: e.target.value })} />
               <div className="error">{errors.id}</div>
 
               <button onClick={handleSubmit}>{isEditing ? 'Update info?' : 'Submit Info?'}</button>
@@ -158,21 +173,27 @@ function Form() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(searchQuery ? filteredEmployees : employees)
-                    .map(employee => (
-                      <tr key={employee.id}>
-                        <td>{employee.name}</td>
-                        <td>{employee.email}</td>
-                        <td>{employee.gender}</td>
-                        <td>{employee.phone}</td>
-                        <td>{employee.position}</td>
-                        <td>{employee.id}</td>
-                        <td>
-                          <button onClick={() => editEmployee(employee)}>Edit</button>
-                          <button onClick={() => deleteEmployee(employee.id)}>Delete</button>
-                        </td>
-                      </tr>
-                    ))}
+                  {(searchQuery ? filteredEmployees : employees).length > 0 ? (
+                    (searchQuery ? filteredEmployees : employees)
+                      .map(employee => (
+                        <tr key={employee.id}>
+                          <td>{employee.name}</td>
+                          <td>{employee.email}</td>
+                          <td>{employee.gender}</td>
+                          <td>{employee.phone}</td>
+                          <td>{employee.position}</td>
+                          <td>{employee.id}</td>
+                          <td>
+                            <button onClick={() => editEmployee(employee)}>Edit</button>
+                            <button onClick={() => deleteEmployee(employee.id)}>Delete</button>
+                          </td>
+                        </tr>
+                      ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7">No employees yet</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -181,7 +202,7 @@ function Form() {
       </div>
 
       <div>
-        <h2>
+        <h2 className='Query-heading'>
           Employee Query
           <button onClick={() => setShowEmployeeQuery(!showEmployeeQuery)}>
             {showEmployeeQuery ? 'Hide' : 'Show'}
@@ -190,7 +211,7 @@ function Form() {
         {showEmployeeQuery && (
           <div>
             <input type="text" placeholder="Who are you looking for?" value={searchQuery}
-              onChange={handleSearchChange} />
+              onChange={handleSearchChange}/>
             <button onClick={handleSearch}>Search</button>
           </div>
         )}

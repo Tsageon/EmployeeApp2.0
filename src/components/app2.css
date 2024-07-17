@@ -8,7 +8,14 @@
  h1{
   margin: 0px;}
 
-  body{
+.Two-headings{
+  color: rgb(255, 0, 0);}  
+
+.Query-heading{
+   color: rgb(0, 60, 255);
+  justify-self: center;}
+
+ body{
   background-color: grey;}
 
  input{
@@ -24,9 +31,23 @@
   border-radius: 10px;
   border-color: aquamarine;}
 
+  .Refresh{
+  background-color: rgb(124, 0, 128);
+  border-radius: 20px;
+  border-color: purple;}  
+  
+  .styled-select {
+  border-radius: 10px;
+  border-color: black;
+  margin-left: 10px;
+  padding: 5px;
+  }
+  
+
  h2{
   margin-top: 20px;
-  padding-left: 20px;}
+  padding-left: 20px;
+  justify-self: center;}
 
  div{
   margin-bottom: 20px;}
@@ -63,6 +84,6 @@
   font-weight: bold;
   font-size: 1.2em;}
  
- .table-container h2 {
+.table-container h2 {
     margin: 20px 0;}
 
