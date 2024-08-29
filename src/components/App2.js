@@ -1,32 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import './app2.css';
-import Home from './Home'
 
 function Form() {
-  const [employees,setEmployees] = useState([]);
-  const [searchQuery,setSearchQuery] = useState('');
-  const [filteredEmployees,setFilteredEmployees] = useState([]);
-  const [newEmployee,setNewEmployee] = useState({
-    name: '', gender: '', email: '',
-    phone: '', image: '', position: '', id: ''
+  const [employees, setEmployees] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredEmployees, setFilteredEmployees] = useState([]);
+  const [newEmployee, setNewEmployee] = useState({
+    name: '', gender: '', email: '', phone: '', image: '', position: '', id: ''
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentEmployeeId, setCurrentEmployeeId] = useState('');
+  const [errors, setErrors] = useState({});
+  const [activeTab, setActiveTab] = useState('form');
+  const searchTimeoutRef = useRef(null);
 
-  const [isEditing,setIsEditing] = useState(false);
-  const [currentEmployeeId,setCurrentEmployeeId] = useState('');
-  const [errors,setErrors] = useState({});
-
-  const [showEmployeeQuery, setShowEmployeeQuery] = useState(true); 
-  const [showFormAndList, setShowFormAndList] = useState(false);
-
-  const validate = () => { 
+  const validate = () => {
     let tempErrors = {};
     tempErrors.name = newEmployee.name ? "" : "This field is required.";
     tempErrors.gender = newEmployee.gender ? "" : "What do you identify as?";
-    tempErrors.email = newEmployee.email ? (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(newEmployee.email) ? "" : "Are you a bot?") : "This field is required.";
-    tempErrors.phone = newEmployee.phone ? (/^\d{10}$/.test(newEmployee.phone) ? "" : "How are we supposed to contact you?") : "This field is required.";
-    tempErrors.image = newEmployee.image ? "" : "What do you look like?";
+    tempErrors.email = newEmployee.email ? (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(newEmployee.email) ? "" : "Are you a Robot?") : "This field is required.";
+    tempErrors.phone = newEmployee.phone ? (/^\d{10}$/.test(newEmployee.phone) ? "" : "How will we contact you?") : "This field is required.";
+    tempErrors.image = newEmployee.image ? "" : "Profile Picture is required.";
     tempErrors.position = newEmployee.position ? "" : "Position is required.";
-    tempErrors.id = newEmployee.id ? (/^\d{13}$/.test(newEmployee.id) ? "" : "Government needs this to be 13 digits.") : "Government needs this.";
+    tempErrors.id = newEmployee.id ? (/^\d{13}$/.test(newEmployee.id) ? "" : "This needs to be 13 digits.") : "This field is required.";
     setErrors(tempErrors);
     return Object.values(tempErrors).every(x => x === "");
   };
@@ -34,25 +30,19 @@ function Form() {
   const addEmployee = () => {
     if (!validate()) return;
     if (employees.some(employee => employee.id === newEmployee.id)) {
-      alert('Congrats, you might be a clone.');
+      alert('Congrats, your information might have been compromised.');
       return;
     }
 
-    try {
-      setEmployees([...employees, newEmployee]);
-      resetForm();
-      alert('Poverty avoided successfully!');
-    } catch (error) {
-      alert('Not Happening.Try again.');
-    }
+    setEmployees([...employees, newEmployee]);
+    resetForm();
+    alert('Poverty avoided successfully!');
   };
 
   const resetForm = () => {
     setNewEmployee({
-      name: '', gender: '', email: '',
-      phone: '', image: '', position: '', id: ''
+      name: '', gender: '', email: '', phone: '', image: '', position: '', id: ''
     });
-
     setIsEditing(false);
     setCurrentEmployeeId('');
     setErrors({});
@@ -66,18 +56,14 @@ function Form() {
     setNewEmployee(employee);
     setIsEditing(true);
     setCurrentEmployeeId(employee.id);
-    setShowFormAndList(true);
+    setActiveTab('form');
   };
 
   const updateEmployee = () => {
     if (!validate()) return;
 
-    try {
-      setEmployees(employees.map(employee => (employee.id === currentEmployeeId ? newEmployee : employee)));
-      resetForm();
-    } catch (error) {
-      alert('Government things Happened.Try Again.');
-    }
+    setEmployees(employees.map(employee => (employee.id === currentEmployeeId ? newEmployee : employee)));
+    resetForm();
   };
 
   const handleSubmit = () => {
@@ -89,133 +75,148 @@ function Form() {
   };
 
   const handleSearch = () => {
-    if (employees.length === 0) {
-      alert('No employees found.');
-      return;
-    }
-
-    setFilteredEmployees(employees.filter(employee => employee.name.includes(searchQuery) || employee.id.includes(searchQuery)));
+    setFilteredEmployees(employees.filter(employee =>
+      employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      employee.id.includes(searchQuery)
+    ));
+    setActiveTab('list'); 
   };
 
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-    if (this.searchTimeout) clearTimeout(this.searchTimeout);
-    this.searchTimeout = setTimeout(handleSearch, 300);
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      handleSearch();
+    }, 300);
   };
 
-  useEffect(() => {
-    handleSearch();
-    // eslint-disable-next-line
-  }, [employees]);
+  const renderForm = () => (
+    <>
+      <input type="text" placeholder="Name" value={newEmployee.name}
+        onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} />
+      <div className="error">{errors.name}</div>
+
+      <input type="email" placeholder="Email" value={newEmployee.email}
+        onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })} />
+      <div className="error">{errors.email}</div>
+
+      <input type="text" placeholder="PhoneNumber" value={newEmployee.phone}
+        onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })} />
+      <div className="error">{errors.phone}</div>
+
+      <input type="text" placeholder="Profile Picture" value={newEmployee.image}
+        onChange={(e) => setNewEmployee({ ...newEmployee, image: e.target.value })} />
+      <div className="error">{errors.image}</div>
+
+      <select className="styled-select"
+        value={newEmployee.gender}
+        onChange={(e) => setNewEmployee({ ...newEmployee, gender: e.target.value })}>
+        <option value="">Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+      <div className="error">{errors.gender}</div>
+
+      <input type="text" placeholder="Position" value={newEmployee.position}
+        onChange={(e) => setNewEmployee({ ...newEmployee, position: e.target.value })} />
+      <div className="error">{errors.position}</div>
+
+      <input type="text" placeholder="ID" value={newEmployee.id}
+        onChange={(e) => setNewEmployee({ ...newEmployee, id: e.target.value })} />
+      <div className="error">{errors.id}</div>
+
+      <button className='edit-btns' onClick={handleSubmit}>
+        {isEditing ? 'Update' : 'Submit'}
+      </button>
+      {isEditing && <button onClick={resetForm}>Cancel</button>}
+    </>
+  );
+
+  const renderEmployeeList = () => (
+    <div className="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Gender</th>
+            <th>Phone</th>
+            <th>Position</th>
+            <th>ID</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {(searchQuery ? filteredEmployees : employees).length > 0 ? (
+            (searchQuery ? filteredEmployees : employees)
+              .map(employee => (
+                <tr key={employee.id}>
+                  <td>{employee.name}</td>
+                  <td>{employee.email}</td>
+                  <td>{employee.gender}</td>
+                  <td>{employee.phone}</td>
+                  <td>{employee.position}</td>
+                  <td>{employee.id}</td>
+                  <td>
+                    <button className='edit' onClick={() => editEmployee(employee)}>Edit</button>
+                    <button className='delete' onClick={() => deleteEmployee(employee.id)}>Delete</button>
+                  </td>
+                </tr>
+              ))
+          ) : (
+            <tr>
+              <td colSpan="7">No employees yet</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderSearch = () => (
+    <>
+      <input type="text" placeholder="Search for employee" value={searchQuery} onChange={handleSearchChange} />
+      <button className='search' onClick={handleSearch}>Search</button>
+    </>
+  );
 
   return (
     <div className="app">
       <h1>Employee Registration Form</h1>
 
-      <div>
-        <h2 className="Two-headings" >
-          {isEditing ? 'Edit Employee' : 'Add Employee'} & Employee List
-          <button onClick={() => setShowFormAndList(!showFormAndList)}>
-            {showFormAndList ? 'Hide' : 'Show'}
-          </button>
-        </h2>
-        {showFormAndList && (
-          <>
-            <div>
-              <input type="text" placeholder="Name/Initials?" value={newEmployee.name}
-                onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} />
-              <div className="error">{errors.name}</div>
-
-              <input type="email" placeholder="Email?" value={newEmployee.email}
-                onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })} />
-              <div className="error">{errors.email}</div>
-
-              <input type="text" placeholder="PhoneNo?" value={newEmployee.phone}
-                onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })} />
-              <div className="error">{errors.phone}</div>
-
-              <input type="text" placeholder="Profile Pic?" value={newEmployee.image}
-                onChange={(e) => setNewEmployee({ ...newEmployee, image: e.target.value })} />
-              <div className="error">{errors.image}</div>
-
-              <select className="styled-select"
-                value={newEmployee.gender}
-                onChange={(e) => setNewEmployee({...newEmployee,gender: e.target.value})}>
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-              <div className="error">{errors.gender}</div>
-
-              <input type="text" placeholder="Position/Title?" value={newEmployee.position}
-                onChange={(e) => setNewEmployee({...newEmployee,position: e.target.value })} />
-              <div className="error">{errors.position}</div>
-
-              <input type="text" placeholder="ID?" value={newEmployee.id}
-                onChange={(e) => setNewEmployee({...newEmployee,id: e.target.value })} />
-              <div className="error">{errors.id}</div>
-
-              <button onClick={handleSubmit}>{isEditing ? 'Update info?' : 'Submit Info?'}</button>
-              {isEditing && <button onClick={resetForm}>Cancel</button>}
-            </div>
-
-            <div className="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Gender</th>
-                    <th>Phone</th>
-                    <th>Position</th>
-                    <th>ID</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(searchQuery ? filteredEmployees : employees).length > 0 ? (
-                    (searchQuery ? filteredEmployees : employees)
-                      .map(employee => (
-                        <tr key={employee.id}>
-                          <td>{employee.name}</td>
-                          <td>{employee.email}</td>
-                          <td>{employee.gender}</td>
-                          <td>{employee.phone}</td>
-                          <td>{employee.position}</td>
-                          <td>{employee.id}</td>
-                          <td>
-                            <button onClick={() => editEmployee(employee)}>Edit</button>
-                            <button onClick={() => deleteEmployee(employee.id)}>Delete</button>
-                          </td>
-                        </tr>
-                      ))
-                  ) : (
-                    <tr>
-                      <td colSpan="7">No employees yet</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
+      <div className="tabs">
+        <button onClick={() => setActiveTab('form')} className={activeTab === 'form' ? 'active-tab' : ''}>Employee Form</button>
+        <button onClick={() => setActiveTab('list')} className={activeTab === 'list' ? 'active-tab' : ''}>Employee List</button>
+        <button onClick={() => setActiveTab('search')} className={activeTab === 'search' ? 'active-tab' : ''}>Search</button>
       </div>
 
-      <div>
-        <h2 className='Query-heading'>
-          Employee Query
-          <button onClick={() => setShowEmployeeQuery(!showEmployeeQuery)}>
-            {showEmployeeQuery ? 'Hide' : 'Show'}
-          </button>
-        </h2>
-        {showEmployeeQuery && (
-          <div>
-            <input type="text" placeholder="Who are you looking for?" value={searchQuery}
-              onChange={handleSearchChange}/>
-            <button onClick={handleSearch}>Search</button>
-          </div>
-        )}
-      </div>
+      {activeTab === 'form' && (
+        <div>
+          <h2 className="Two-headings">{isEditing ? 'Edit Employee' : 'Add Employee'}</h2>
+          {renderForm()}
+        </div>
+      )}
+
+      {activeTab === 'list' && (
+        <div>
+          <h2 className="Two-headings">Employee List</h2>
+          {renderEmployeeList()}
+        </div>
+      )}
+
+      {activeTab === 'search' && (
+        <div>
+          <h2 className="Query-heading">Employee Query</h2>
+          {renderSearch()}
+          {}
+          {searchQuery && renderEmployeeList()}
+        </div>
+      )}
     </div>
   );
 }
