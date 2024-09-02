@@ -36,7 +36,7 @@ function Form() {
 
     setEmployees([...employees, newEmployee]);
     resetForm();
-    alert('Poverty avoided successfully!');
+    alert('Employee added successfully!');
   };
 
   const resetForm = () => {
@@ -141,7 +141,7 @@ function Form() {
     <div className="table-container">
       <table>
         <thead>
-          <tr>
+          <tr><th>Profile Picture</th>
             <th>Name</th>
             <th>Email</th>
             <th>Gender</th>
@@ -156,6 +156,13 @@ function Form() {
             (searchQuery ? filteredEmployees : employees)
               .map(employee => (
                 <tr key={employee.id}>
+                    <td>
+                    {employee.image ? (
+                      <img src={employee.image} alt={employee.name} className="employee-image" />
+                    ) : (
+                      'No image'
+                    )}
+                  </td>
                   <td>{employee.name}</td>
                   <td>{employee.email}</td>
                   <td>{employee.gender}</td>
@@ -170,13 +177,14 @@ function Form() {
               ))
           ) : (
             <tr>
-              <td colSpan="7">No employees yet</td>
+              <td colSpan="8">No employees yet</td>
             </tr>
           )}
         </tbody>
       </table>
     </div>
   );
+  
 
   const renderSearch = () => (
     <>

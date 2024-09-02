@@ -144,6 +144,13 @@ table caption {
   margin-bottom: 20px;
 }
 
+.employee-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .tabs button {
   background-color: #007bff;
   color: white;
