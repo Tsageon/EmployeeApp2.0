@@ -12,6 +12,7 @@ h1 {
   margin: 10;
   font-size: 2em;
   color: #333;
+  text-align: center;
 }
 
 .Two-headings, .Query-heading {
@@ -81,6 +82,7 @@ th {
 
 td {
   padding: 12px;
+  text-align: center;
 }
 
 tr:nth-child(even) {
@@ -90,9 +92,10 @@ tr:nth-child(even) {
 tr:hover {
   background-color: #ddd;
 }
+
 button {
   padding: 5px 10px;  
-  border-radius: 10px; 
+  border-radius: 5px; 
   font-size: 0.9em; 
   border: 1px solid #007bff;
   background-color: #007bff;
@@ -101,7 +104,7 @@ button {
 }
 
 button:hover {
-  background-color: grey;
+  background-color: #B59410;
   border-color: #0056b3;
 }
 
@@ -118,6 +121,7 @@ button:hover {
   display: flex;
   margin-top: 10px;
 }
+
 .Refresh {
   margin: 5px;
   padding: 0px 0px; 
@@ -138,6 +142,7 @@ table caption {
   color: #333;
   text-align: center;
 }
+
 .tabs {
   display: flex;
   justify-content: center;
@@ -152,7 +157,7 @@ table caption {
 }
 
 .tabs button {
-  background-color: #007bff;
+  background-color: dodgerblue;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -162,7 +167,7 @@ table caption {
 }
 
 .tabs button.active-tab {
-  background-color: grey;
+  background-color: blue;
 }
 .error {
   color: #ff4d4d;

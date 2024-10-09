@@ -1,13 +1,15 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { storage,db  } from '../Config/firebase';
+import { collection, addDoc, updateDoc, doc, deleteDoc, getDocs } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL  } from 'firebase/storage';
+import axios from 'axios';
 import './app2.css';
 
 function Form() {
   const [employees, setEmployees] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredEmployees, setFilteredEmployees] = useState([]);
-  const [newEmployee, setNewEmployee] = useState({
-    name: '', gender: '', email: '', phone: '', image: '', position: '', id: ''
-  });
+  const [newEmployee, setNewEmployee] = useState({name: '', gender: '', email: '', phone: '', image: '', position: '', id: ''});
   const [isEditing, setIsEditing] = useState(false);
   const [currentEmployeeId, setCurrentEmployeeId] = useState('');
   const [errors, setErrors] = useState({});
@@ -17,7 +19,7 @@ function Form() {
   const validate = () => {
     let tempErrors = {};
     tempErrors.name = newEmployee.name ? "" : "This field is required.";
-    tempErrors.gender = newEmployee.gender ? "" : "What do you identify as?";
+    tempErrors.gender = newEmployee.gender ? "" : "What's Your Gender?";
     tempErrors.email = newEmployee.email ? (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(newEmployee.email) ? "" : "Are you a Robot?") : "This field is required.";
     tempErrors.phone = newEmployee.phone ? (/^\d{10}$/.test(newEmployee.phone) ? "" : "How will we contact you?") : "This field is required.";
     tempErrors.image = newEmployee.image ? "" : "Profile Picture is required.";
@@ -25,18 +27,6 @@ function Form() {
     tempErrors.id = newEmployee.id ? (/^\d{13}$/.test(newEmployee.id) ? "" : "This needs to be 13 digits.") : "This field is required.";
     setErrors(tempErrors);
     return Object.values(tempErrors).every(x => x === "");
-  };
-
-  const addEmployee = () => {
-    if (!validate()) return;
-    if (employees.some(employee => employee.id === newEmployee.id)) {
-      alert('Congrats, your information might have been compromised.');
-      return;
-    }
-
-    setEmployees([...employees, newEmployee]);
-    resetForm();
-    alert('Employee added successfully!');
   };
 
   const resetForm = () => {
@@ -48,8 +38,15 @@ function Form() {
     setErrors({});
   };
 
-  const deleteEmployee = (id) => {
-    setEmployees(employees.filter(employee => employee.id !== id));
+  const deleteEmployee = async (id) => {
+    try {
+      const employeeDoc = doc(db, 'employees', id);
+      await deleteDoc(employeeDoc);
+      setEmployees(employees.filter(employee => employee.id !== id));
+    } catch (error) {
+      console.error('Error deleting employee', error);
+      alert('Error deleting employee.');
+    }
   };
 
   const editEmployee = (employee) => {
@@ -59,21 +56,67 @@ function Form() {
     setActiveTab('form');
   };
 
-  const updateEmployee = () => {
-    if (!validate()) return;
-
-    setEmployees(employees.map(employee => (employee.id === currentEmployeeId ? newEmployee : employee)));
-    resetForm();
+  const uploadImageToFirebase = async (imageFile) => {
+    const imageRef = ref(storage, `images/${imageFile.name}`);
+    const snapshot = await uploadBytes(imageRef, imageFile);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
   };
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      const employeeCollection = collection(db, 'employees');
+      const employeeSnapshot = await getDocs(employeeCollection);
+      const employeeList = employeeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setEmployees(employeeList);
+    };
+
+    fetchEmployees();
+  }, []);
+
+  const handleSubmit = async () => {
+  if (!validate()) return;
+
+  let imageUrl = '';
+  if (newEmployee.image) {
+    imageUrl = await uploadImageToFirebase(newEmployee.image);
+  }
+
+  const employeeData = {
+    name: newEmployee.name,
+    email: newEmployee.email,
+    image: imageUrl,
+    phone: newEmployee.phone,
+    gender: newEmployee.gender,
+    position: newEmployee.position,
+    id: newEmployee.id,
+  };
+
+  try {
+    const employeesCollectionRef = collection(db, 'employees');
+
     if (isEditing) {
-      updateEmployee();
-    } else {
-      addEmployee();
-    }
-  };
 
+      const employeeDocRef = doc(db, 'employees', currentEmployeeId);
+      await updateDoc(employeeDocRef, employeeData);
+
+      await axios.put(`http://localhost:5000/employees/${currentEmployeeId}`, employeeData);
+      alert('Employee updated in both Firestore and backend!');
+    } else {
+
+      await addDoc(employeesCollectionRef, employeeData);
+
+      await axios.post('http://localhost:5000/employees', employeeData);
+      alert('Employee added to both Firestore and backend!');
+    }
+
+    resetForm();
+  } catch (error) {
+    console.error('Error submitting employee data', error);
+    alert('Error submitting employee data.');
+  }
+};
+  
   const handleSearch = () => {
     setFilteredEmployees(employees.filter(employee =>
       employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -109,8 +152,8 @@ function Form() {
         onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })} />
       <div className="error">{errors.phone}</div>
 
-      <input type="text" placeholder="Profile Picture" value={newEmployee.image}
-        onChange={(e) => setNewEmployee({ ...newEmployee, image: e.target.value })} />
+      <input type="file" accept="image/*"
+      onChange={(e) => setNewEmployee({ ...newEmployee, image: e.target.files[0] })} />
       <div className="error">{errors.image}</div>
 
       <select className="styled-select"
@@ -138,6 +181,7 @@ function Form() {
   );
 
   const renderEmployeeList = () => (
+    
     <div className="table-container">
       <table>
         <thead>
@@ -156,9 +200,9 @@ function Form() {
             (searchQuery ? filteredEmployees : employees)
               .map(employee => (
                 <tr key={employee.id}>
-                    <td>
+                  <td>
                     {employee.image ? (
-                      <img src={employee.image} alt={employee.name} className="employee-image" />
+                      <img src={employee.image} alt={employee.name} className="employee-image"/>
                     ) : (
                       'No image'
                     )}
@@ -185,7 +229,6 @@ function Form() {
     </div>
   );
   
-
   const renderSearch = () => (
     <>
       <input type="text" placeholder="Search for employee" value={searchQuery} onChange={handleSearchChange} />
@@ -196,27 +239,23 @@ function Form() {
   return (
     <div className="app">
       <h1>Employee Registration Form</h1>
-
       <div className="tabs">
         <button onClick={() => setActiveTab('form')} className={activeTab === 'form' ? 'active-tab' : ''}>Employee Form</button>
         <button onClick={() => setActiveTab('list')} className={activeTab === 'list' ? 'active-tab' : ''}>Employee List</button>
         <button onClick={() => setActiveTab('search')} className={activeTab === 'search' ? 'active-tab' : ''}>Search</button>
       </div>
-
       {activeTab === 'form' && (
         <div>
           <h2 className="Two-headings">{isEditing ? 'Edit Employee' : 'Add Employee'}</h2>
           {renderForm()}
         </div>
       )}
-
       {activeTab === 'list' && (
         <div>
           <h2 className="Two-headings">Employee List</h2>
           {renderEmployeeList()}
         </div>
       )}
-
       {activeTab === 'search' && (
         <div>
           <h2 className="Query-heading">Employee Query</h2>
